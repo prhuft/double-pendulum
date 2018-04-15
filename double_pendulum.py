@@ -2,20 +2,19 @@
 	
 	Preston Huft, Spring 2018. 
 	
-	Numerical simulation of double compound pendulum, solved iteratively with
-	the leap-frog method. 
+	Numerical simulation of compound double pendulum, solved iteratively with
+	the leap-frog method. For now, both pendula have the same mass and arm 
+	length. Note that there aren't any mass terms in the equations, as all 
+	mass terms cancel out under this condition. 
 """
 
 ## Libraries 
 
 from matplotlib import pyplot as plt
 import matplotlib.animation as animation
-#import scipy.integrate as integrate
 import numpy as np
 import math as m
 import time as t
-# from numpy import cos
-# from numpy import sin
 from math import cos
 from math import sin
 
@@ -23,7 +22,7 @@ from math import sin
 
 g = 9.8 # [m/s]
 l = 0.1 # [m]
-DEBUG = 0
+DEBUG = 0 # set to 1 if we're debugging
 
 ## Methods
 
@@ -36,14 +35,15 @@ def theta_update(theta,omega,tau):
 	return theta + 2*tau*omega
 	
 def omega_update(omega,alpha,tau):
-	""" Returns omega_(n+1), given omega_(n-1) and alpha_n. and tau."""
+	""" Returns omega_(n+1), the angular speed of an arm, given omega_(n-1) and
+	alpha_n. and tau."""
 	# if DEBUG:
 		# print('omega update: ',omega + 2*tau*alpha)
 		# print()
 	return omega + 2*tau*alpha
 	
 def alpha1_update(theta1,theta2,omega1,omega2,alpha2):
-	""" Returns alpha1."""
+	""" Returns alpha1, the angular acceleration of the first arm. """
 	
 	t1 = theta1
 	t2 = theta2
@@ -62,7 +62,7 @@ def alpha1_update(theta1,theta2,omega1,omega2,alpha2):
 	return a1
 	
 def alpha2_update(theta1,theta2,omega1,omega2,alpha1):
-	""" Returns alpha2."""
+	""" Returns alpha2, the angular acceleration of the first arm. """
 	
 	t1 = theta1
 	t2 = theta2
@@ -84,7 +84,7 @@ def toXY(theta):
 
 def data_generator(theta1,theta2,omega1,omega2,alpha1,alpha2,dt,steps):
 	"""" Computes the positions of the double pendulum system at each
-	timestep, for steps number of iterations, deltat [s] apart."""
+	timestep, for steps number of iterations, dt [s] apart."""
 	
 	# Angular position
 	t1 = theta1 
@@ -111,21 +111,9 @@ def data_generator(theta1,theta2,omega1,omega2,alpha1,alpha2,dt,steps):
 	for i in range(1,2*steps+1):
 		try:
 			if i % 2 != 0:
-				# if DEBUG:
-					# print('o1,o2 = ', o1,o2)
-					# print()
-									
-				
 				o1 = omega_update(o1,a1,tau)
 				o2 = omega_update(o2,a2,tau)
-				
 			else: 
-				# if DEBUG:
-					# print('a1,a2 = ', a1,a2)
-					# print()
-					# print('t1,t2 = ', t1,t2)
-					# print()
-					
 				temp_t1 = theta_update(t1,o1,tau)
 				t2 = theta_update(t2,o2,tau)
 				
@@ -140,9 +128,10 @@ def data_generator(theta1,theta2,omega1,omega2,alpha1,alpha2,dt,steps):
 				xData2, yData2 = toXY(t2)[0]+xData1,toXY(t2)[1]+yData1
 				
 				data1 = xData1,yData1 # endpoint of arm 1
-				data2 = xData2,yData2 # ditto, but arm 2
+				data2 = xData2,yData2 # endpoint of arm 2
 				
-				yield data1,data2
+				# return the data
+				yield data1,data2 
 				
 			if DEBUG:
 				print('Iter ',i,': t1,t2= ',t1,t2)
@@ -172,8 +161,12 @@ def run(data):
 	# update the data
 	x1, y1 = data[0]
 	x2, y2 = data[1]
+	
+	# xdata,ydata are the three points defining our pendula's position. 
 	xdata = [[0,x1,x2]]
 	ydata = [[0,y1,y2]]
+	
+	# set the line to the pendula arms position
 	line.set_data(xdata,ydata)
 	return line
 
@@ -191,6 +184,7 @@ iters = 1000 # times to update the systems
 
 data_gen = data_generator(theta1_0,theta2_0,omega1_0,omega2_0,alpha1_0,alpha2_0,tau,iters)
 
+# This is what iterates through run(data) and plots the result.
 ani = animation.FuncAnimation(fig, run, data_gen, blit=False, interval=1,
                               repeat=False, init_func=init)
 plt.show()
