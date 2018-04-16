@@ -27,14 +27,14 @@ DEBUG = 0 # set to 1 if we're debugging
 ## Methods
 
 #begin region: Methods for leap-frog method of ODE solving 
-def theta_update(theta,omega,tau):
+def LF_theta_update(theta,omega,tau):
 	""" Returns theta_(n+2), given theta_n and omega_(n+1) and tau."""
 	# if DEBUG:
 		# print('theta update: ',theta + 2*tau*omega)
 		# print()
 	return theta + 2*tau*omega
 	
-def omega_update(omega,alpha,tau):
+def LF_omega_update(omega,alpha,tau):
 	""" Returns omega_(n+1), the angular speed of an arm, given omega_(n-1) and
 	alpha_n. and tau."""
 	# if DEBUG:
@@ -42,7 +42,7 @@ def omega_update(omega,alpha,tau):
 		# print()
 	return omega + 2*tau*alpha
 	
-def alpha1_update(theta1,theta2,omega1,omega2,alpha2):
+def LF_alpha1_update(theta1,theta2,omega1,omega2,alpha2):
 	""" Returns alpha1, the angular acceleration of the first arm. """
 	
 	t1 = theta1
@@ -61,7 +61,7 @@ def alpha1_update(theta1,theta2,omega1,omega2,alpha2):
 		
 	return a1
 	
-def alpha2_update(theta1,theta2,omega1,omega2,alpha1):
+def LF_alpha2_update(theta1,theta2,omega1,omega2,alpha1):
 	""" Returns alpha2, the angular acceleration of the first arm. """
 	
 	t1 = theta1
@@ -82,7 +82,7 @@ def toXY(theta):
 	""" Returns the (x,y) coordinate of the end of a single pendulum arm."""
 	return l*sin(theta), -l*cos(theta)
 
-def data_generator(theta1,theta2,omega1,omega2,alpha1,alpha2,dt,steps):
+def LF_data(theta1,theta2,omega1,omega2,alpha1,alpha2,dt,steps):
 	"""" Computes the positions of the double pendulum system at each
 	timestep, for steps number of iterations, dt [s] apart."""
 	
@@ -111,14 +111,14 @@ def data_generator(theta1,theta2,omega1,omega2,alpha1,alpha2,dt,steps):
 	for i in range(1,2*steps+1):
 		try:
 			if i % 2 != 0:
-				o1 = omega_update(o1,a1,tau)
-				o2 = omega_update(o2,a2,tau)
+				o1 = LF_omega_update(o1,a1,tau)
+				o2 = LF_omega_update(o2,a2,tau)
 			else: 
-				temp_t1 = theta_update(t1,o1,tau)
-				t2 = theta_update(t2,o2,tau)
+				temp_t1 = LF_theta_update(t1,o1,tau)
+				t2 = LF_theta_update(t2,o2,tau)
 				
-				temp_a1 = alpha1_update(t1,t2,o1,o2,a2)
-				temp_a2 = alpha2_update(t1,t2,o1,o2,a1)
+				temp_a1 = LF_alpha1_update(t1,t2,o1,o2,a2)
+				temp_a2 = LF_alpha2_update(t1,t2,o1,o2,a1)
 				
 				a1 = temp_a1
 				a2 = temp_a2
@@ -145,17 +145,25 @@ def data_generator(theta1,theta2,omega1,omega2,alpha1,alpha2,dt,steps):
 	
 def init():
 	""" Initialize the plot. """
-	ax.set_ylim(-2*l*1.25,2*l*1.25)
-	ax.set_xlim(-2*l*1.25, 2*l*1.25)
+	ax.set_ylim(-2*l*1.1,2*l*1.1)
+	ax.set_xlim(-2*l*1.1, 2*l*1.1)
 
-	line.set_data([],[])
-	return line
+	# line.set_data([],[])
+	pen_line.set_data([],[])
+	trail1_line.set_data([],[])
+	trail2_line.set_data([],[])
+	# return line
+	return pen_line,trail1_line,trail2_line
 
 fig, ax = plt.subplots()
-line, = ax.plot([], [], lw=1)
-ax.grid()
-xdata, ydata = [], []
-
+pen_line, = ax.plot([],[],color='black',lw=2)
+trail1_line, = ax.plot([],[],color='orange',lw=1)
+trail2_line, = ax.plot([],[],color='purple',lw=1)
+#ax.grid()
+#xdata, ydata = [],[]
+pen_xdata, pen_ydata = [],[]
+trail1_xdata, trail1_ydata = [],[]
+trail2_xdata, trail2_ydata = [],[]
 
 def run(data):
 	# update the data
@@ -163,12 +171,25 @@ def run(data):
 	x2, y2 = data[1]
 	
 	# xdata,ydata are the three points defining our pendula's position. 
-	xdata = [[0,x1,x2]]
-	ydata = [[0,y1,y2]]
+	# xdata = [[0,x1,x2]]
+	# ydata = [[0,y1,y2]]
+	
+	pen_xdata = [[0,x1,x2]]
+	pen_ydata = [[0,y1,y2]]
+	pen_line.set_data(pen_xdata,pen_ydata)
+	
+	trail1_xdata.append(x1)
+	trail1_ydata.append(y1)
+	trail1_line.set_data(trail1_xdata,trail1_ydata)
+	
+	trail2_xdata.append(x2)
+	trail2_ydata.append(y2)
+	trail2_line.set_data(trail2_xdata,trail2_ydata)
 	
 	# set the line to the pendula arms position
-	line.set_data(xdata,ydata)
-	return line
+	# line.set_data(xdata,ydata)
+	# return line
+	return pen_line,trail1_line,trail2_line
 
 ## The main code
 
@@ -182,7 +203,7 @@ alpha2_0 = -3*g*sin(theta2_0)/l # ditto
 tau = 0.0005 # [s]
 iters = 1000 # times to update the systems
 
-data_gen = data_generator(theta1_0,theta2_0,omega1_0,omega2_0,alpha1_0,alpha2_0,tau,iters)
+data_gen = LF_data(theta1_0,theta2_0,omega1_0,omega2_0,alpha1_0,alpha2_0,tau,iters)
 
 # This is what iterates through run(data) and plots the result.
 ani = animation.FuncAnimation(fig, run, data_gen, blit=False, interval=1,
