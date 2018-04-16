@@ -6,6 +6,14 @@
 	the leap-frog method. For now, both pendula have the same mass and arm 
 	length. Note that there aren't any mass terms in the equations, as all 
 	mass terms cancel out under this condition. 
+	
+	To-Do List: 
+	- Replace leap-frog method with Runge-Kutta (4th order).
+	- Generalize acceleration equations to not assume the same mass and arm 
+	length for both pendula. 
+	- Become bored enough to turn this into a double "springdulum" simulation. 
+	- Add subplots of angular position, velocity, and acceleration
+	- figure out how to force the plot to be square (i.e. not distorted)
 """
 
 ## Libraries 
@@ -155,12 +163,19 @@ def init():
 	# return line
 	return pen_line,trail1_line,trail2_line
 
+# This seems like a really bad place to initialize variables
+
+# Create the figure and axes objects
 fig, ax = plt.subplots()
-pen_line, = ax.plot([],[],color='black',lw=2)
+ax.set_facecolor('black')
+fig.patch.set_facecolor('black')
+
+# Initialize the 2DLines, which are lists of tuples (hence the comma)
+pen_line, = ax.plot([],[],color='white',lw=2)
 trail1_line, = ax.plot([],[],color='orange',lw=1)
 trail2_line, = ax.plot([],[],color='purple',lw=1)
-#ax.grid()
-#xdata, ydata = [],[]
+
+# Initialize the data which will fill the lines
 pen_xdata, pen_ydata = [],[]
 trail1_xdata, trail1_ydata = [],[]
 trail2_xdata, trail2_ydata = [],[]
@@ -169,11 +184,7 @@ def run(data):
 	# update the data
 	x1, y1 = data[0]
 	x2, y2 = data[1]
-	
-	# xdata,ydata are the three points defining our pendula's position. 
-	# xdata = [[0,x1,x2]]
-	# ydata = [[0,y1,y2]]
-	
+
 	pen_xdata = [[0,x1,x2]]
 	pen_ydata = [[0,y1,y2]]
 	pen_line.set_data(pen_xdata,pen_ydata)
@@ -186,9 +197,6 @@ def run(data):
 	trail2_ydata.append(y2)
 	trail2_line.set_data(trail2_xdata,trail2_ydata)
 	
-	# set the line to the pendula arms position
-	# line.set_data(xdata,ydata)
-	# return line
 	return pen_line,trail1_line,trail2_line
 
 ## The main code
