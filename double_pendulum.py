@@ -1,19 +1,21 @@
-""" Double Compound Pendulum Simulation. 
+""""
+ Double Compound Pendulum Simulation. 
 	
-	Preston Huft, Spring 2018. 
-	
-	Numerical simulation of compound double pendulum, solved iteratively with
-	the leap-frog method. For now, both pendula have the same mass and arm 
-	length. Note that there aren't any mass terms in the equations, as all 
-	mass terms cancel out under this condition. 
-	
-	To-Do List: 
-	- Replace leap-frog method with Runge-Kutta (4th order).
-	- Generalize acceleration equations to not assume the same mass and arm 
-	length for both pendula. 
-	- Become bored enough to turn this into a double "springdulum" simulation. 
-	- Add subplots of angular position, velocity, and acceleration
-	- figure out how to force the plot to be square (i.e. not distorted)
+Preston Huft, Spring 2018. 
+
+Numerical simulation of compound double pendulum, solved iteratively with
+the leap-frog method. For now, both pendula have the same mass and arm 
+length. Note that there aren't any mass terms in the equations, as all 
+mass terms cancel out under this condition. 
+
+To-Do List: 
+- Replace leap-frog method with Runge-Kutta (4th order).
+- Generalize acceleration equations to not assume the same mass and arm 
+length for both pendula. 
+- Become bored enough to turn this into a double "springdulum" simulation. 
+- Add subplots of angular position, velocity, and acceleration
+- figure out how to force the plot to be square (i.e. not distorted)
+- use a state variable to keep track of theta, omega, alpha?
 """
 
 ## Libraries 
@@ -34,23 +36,7 @@ DEBUG = 0 # set to 1 if we're debugging
 
 ## Methods
 
-#begin region: Methods for leap-frog method of ODE solving 
-def LF_theta_update(theta,omega,tau):
-	""" Returns theta_(n+2), given theta_n and omega_(n+1) and tau."""
-	# if DEBUG:
-		# print('theta update: ',theta + 2*tau*omega)
-		# print()
-	return theta + 2*tau*omega
-	
-def LF_omega_update(omega,alpha,tau):
-	""" Returns omega_(n+1), the angular speed of an arm, given omega_(n-1) and
-	alpha_n. and tau."""
-	# if DEBUG:
-		# print('omega update: ',omega + 2*tau*alpha)
-		# print()
-	return omega + 2*tau*alpha
-	
-def LF_alpha1_update(theta1,theta2,omega1,omega2,alpha2):
+def alpha1_update(theta1,theta2,omega1,omega2,alpha2):
 	""" Returns alpha1, the angular acceleration of the first arm. """
 	
 	t1 = theta1
@@ -69,7 +55,7 @@ def LF_alpha1_update(theta1,theta2,omega1,omega2,alpha2):
 		
 	return a1
 	
-def LF_alpha2_update(theta1,theta2,omega1,omega2,alpha1):
+def alpha2_update(theta1,theta2,omega1,omega2,alpha1):
 	""" Returns alpha2, the angular acceleration of the first arm. """
 	
 	t1 = theta1
@@ -84,12 +70,23 @@ def LF_alpha2_update(theta1,theta2,omega1,omega2,alpha1):
 		# print('alpha2 update: ', a2)
 		# print()
 	return a2
-#end region: Methods for leap-frog method of ODE solving 
 	
-def toXY(theta):
-	""" Returns the (x,y) coordinate of the end of a single pendulum arm."""
-	return l*sin(theta), -l*cos(theta)
-
+#begin region: Methods for leap-frog method of ODE solving 
+def LF_theta_update(theta,omega,tau):
+	""" Returns theta_(n+2), given theta_n and omega_(n+1) and tau."""
+	# if DEBUG:
+		# print('theta update: ',theta + 2*tau*omega)
+		# print()
+	return theta + 2*tau*omega
+	
+def LF_omega_update(omega,alpha,tau):
+	""" Returns omega_(n+1), the angular speed of an arm, given omega_(n-1) and
+	alpha_n. and tau."""
+	# if DEBUG:
+		# print('omega update: ',omega + 2*tau*alpha)
+		# print()
+	return omega + 2*tau*alpha
+	
 def LF_data(theta1,theta2,omega1,omega2,alpha1,alpha2,dt,steps):
 	"""" Computes the positions of the double pendulum system at each
 	timestep, for steps number of iterations, dt [s] apart."""
@@ -150,6 +147,145 @@ def LF_data(theta1,theta2,omega1,omega2,alpha1,alpha2,dt,steps):
 		except ValueError:		
 			print('value error at iteration ',i)
 			break
+#end region: Methods for leap-frog method of ODE solving 
+
+#begin region: Methods for Runge-Kutta method of ODE solving
+
+def RK_omega1_update(theta1,theta2,omega1,omega2,alpha2,tau):
+
+	t1 = theta1
+	t2 = theta2
+	o1 = omega1
+	o2 = omega2
+	a2 = alpha2
+	
+	h = tau
+
+	def k(dt):
+		return h*alpha1_update(t1+dt,t2+dt,o1,o2,a2)
+	k1 = k(0)
+	k2 = k(k1/2)
+	k3 = k(k2/2)
+	k4 = k(k3)
+		
+	return o1+(k1+2*k2+2*k3+k4)/6
+	
+def RK_omega2_update(theta1,theta2,omega1,omega2,alpha1,tau):
+
+	t1 = theta1
+	t2 = theta2
+	o1 = omega1
+	o2 = omega2
+	a1 = alpha1
+	
+	dt = tau
+
+	def k(dt):
+		return dt*alpha2_update(t1+dt,t2+dt,o1,o2,a1)
+	k1 = k(0)
+	k2 = k(k1/2)
+	k3 = k(k2/2)
+	k4 = k(k3)
+		
+	return o2+(k1+2*k2+2*k3+k4)/6
+	
+def RK_theta1_update(theta1,theta2,omega1,omega2,alpha2,tau):
+
+	t1 = theta1
+	t2 = theta2
+	o1 = omega1
+	o2 = omega2
+	a2 = alpha2
+	
+	dt = tau
+
+	def k(dt):
+		return dt*RK_omega1_update(t1+dt,t2+dt,o1,o2,a2,dt)
+	k1 = k(0)
+	k2 = k(k1/2)
+	k3 = k(k2/2)
+	k4 = k(k3)
+		
+	return o1+(k1+2*k2+2*k3+k4)/6
+	
+def RK_theta2_update(theta1,theta2,omega1,omega2,alpha1,tau):
+
+	t1 = theta1
+	t2 = theta2
+	o1 = omega1
+	o2 = omega2
+	a1 = alpha1
+	
+	dt = tau
+
+	def k(dt):
+		return dt*RK_omega2_update(t1+dt,t2+dt,o1,o2,a1,dt)
+	k1 = k(0)
+	k2 = k(k1/2)
+	k3 = k(k2/2)
+	k4 = k(k3)
+		
+	return o1+(k1+2*k2+2*k3+k4)/6
+
+def RK_data(theta1,theta2,omega1,omega2,tau,steps):
+	"""" Computes the positions of the double pendulum system at each
+	timestep, for steps number of iterations, dt [s] apart."""
+	
+	# Angular position
+	t1 = theta1 
+	t2 = theta2
+	
+	# Angular velocity
+	o1 = omega1 
+	o2 = omega2
+	
+	# Angular acceleration
+	a1 = -3*g*sin(t1)/(2*l)
+	a2 = -3*g*sin(t2)/(2*l) 
+	
+	# Timestep
+	dt = tau
+	
+	# The initial endpoints of each arm, in Cartesian coordinates
+	xData1, yData1 = toXY(t1)[0], toXY(t1)[1]
+	xData2, yData2 = toXY(t2)[0]+xData1, toXY(t2)[1]+yData1
+	
+	# Forward feed the RK4 method
+	for i in range(0,steps):
+		try:
+			
+			# Get (n+1)th angular positions
+			temp_t1 = RK_theta1_update(t1,t2,o1,o2,a2,dt)
+			temp_t2 = RK_theta1_update(t1,t2,o1,o2,a1,dt)
+			# Get (n+1)the angular speeds
+			temp_o1 = RK_omega1_update(t1,t2,o1,o2,a2,dt)
+			o2 = RK_omega1_update(t1,t2,o1,o2,a1,dt)
+			
+			t1 = temp_t1
+			t2 = temp_t2
+			o1 = temp_o1
+			
+			xData1, yData1 = toXY(t1)[0],toXY(t1)[1]
+			xData2, yData2 = toXY(t2)[0]+xData1,toXY(t2)[1]+yData1
+			
+			data1 = xData1,yData1 # endpoint of arm 1
+			data2 = xData2,yData2 # endpoint of arm 2
+				
+			# return the data
+			yield data1,data2 
+				
+			if DEBUG:
+				print('Iter ',i,': t1,t2= ',t1,t2)
+				print('o1,o2= ',o1,o2,' a1,a2= ',a1,a2)
+				print()
+		except ValueError:		
+			print('value error at iteration ',i)
+			break
+	
+#end region: Methods for Runge-Kutta method of ODE solving
+def toXY(theta):
+	""" Returns the (x,y) coordinate of the end of a single pendulum arm."""
+	return l*sin(theta), -l*cos(theta)
 	
 def init():
 	""" Initialize the plot. """
@@ -208,12 +344,13 @@ omega1_0 = 0 # [rad/s]
 omega2_0 = 0 # ditto
 alpha1_0 = -3*g*sin(theta1_0)/l # [rad/s^2]
 alpha2_0 = -3*g*sin(theta2_0)/l # ditto
-tau = 0.0005 # [s]
+dt = 0.003 # [s]
 iters = 1000 # times to update the systems
 
-data_gen = LF_data(theta1_0,theta2_0,omega1_0,omega2_0,alpha1_0,alpha2_0,tau,iters)
+# data_gen = LF_data(theta1_0,theta2_0,omega1_0,omega2_0,alpha1_0,alpha2_0,dt,iters)
+data_gen = RK_data(theta1_0,theta2_0,omega1_0,omega2_0,dt,iters)
 
 # This is what iterates through run(data) and plots the result.
-ani = animation.FuncAnimation(fig, run, data_gen, blit=False, interval=1,
+ani = animation.FuncAnimation(fig, run, data_gen, blit=False, interval=dt*1000,
                               repeat=False, init_func=init)
 plt.show()
