@@ -51,13 +51,15 @@ def derivs(theta1,theta2,omega1,omega2,alpha1,alpha2,tau,params):
 	I1 = (1./3)*m1*l1**2
 	I2 = (1./3)*m2*l2**2
 	
-	a1 = (1./8)*m2*l1*l2*(o2*(o1*(sin(o1)*cos(o2)+cos(o2)*sin(o2))+
+	a1 = (((1./8)*m2*l1*l2*(o2*(o1*(sin(o1)*cos(o2)+cos(o2)*sin(o2))+
 	o2*(cos(o1)*sin(o2)+sin(o1)*cos(o2)))+a2*(sin(o2)*sin(o1)-
-	cos(o1)*cos(o2)))/(m1*((l1/2.)**2)+I1)
+	cos(o1)*cos(o2)))-m1*g*l1*sin(t1)/2.-(m2/4.)*a2*l2**2)/(m1*((l1/2.)**2)+
+	I1+(1./4)*m2*l1**2))
 		
-	a2 = (1./8)*m1*l2*l1*(o1*(o2*(sin(o2)*cos(o1)+cos(o1)*sin(o1))+
+	a2 = (((1./8)*m1*l2*l1*(o1*(o2*(sin(o2)*cos(o1)+cos(o1)*sin(o1))+
 	o1*(cos(o2)*sin(o1)+sin(o2)*cos(o1)))+a1*(sin(o1)*sin(o2)-
-	cos(o2)*cos(o1)))/(m2*((l2/2.)**2)+I2)
+	cos(o2)*cos(o1)))-m2*g*l2*sin(t2)/2.-(m1/4.)*a1*l1**2)/(m2*((l2/2.)**2)+
+	I2+(1./4)*m2*l1**2))
 	
 	return o1,o2,a1,a2
 	
@@ -115,8 +117,8 @@ def RK_data(m1,m2,l1,l2,theta1,theta2,omega1,omega2,tau,steps):
 	o2 = omega2
 	
 	# Angular acceleration, n = 0
-	a1 = alpha_init(t1,l1)#-3*g*sin(t1)/(2*l)
-	a2 = alpha_init(t2,l2)#-3*g*sin(t2)/(2*l) 
+	a1 = alpha_init(t1,l1)
+	a2 = alpha_init(t2,l2)
 	
 	if DEBUG:
 				print('Iter 0',': t1,t2= ',t1,t2)
