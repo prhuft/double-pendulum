@@ -35,210 +35,76 @@ DEBUG = 0 # set to 1 if we're debugging
 
 ## Methods
 
-def alpha1_update(theta1,theta2,omega1,omega2,alpha2,m1,m2,l1,l2):
-	""" Returns alpha1, the angular acceleration of the first arm. """
-	
+#begin region: Methods for Runge-Kutta method of ODE solving
+def derivs(theta1,theta2,omega1,omega2,alpha1,alpha2,tau,params):
 	t1 = theta1
 	t2 = theta2
 	o1 = omega1
 	o2 = omega2
+	a1 = alpha1
 	a2 = alpha2
+	
+	m1,m2,l1,l2 = params
+	
+	dt = tau
 	
 	I1 = (1./3)*m1*l1**2
-	
-	a1 = (1./8)*m2*l1*l2*(o2*(o1*(sin(o1)*cos(o2)+cos(o2)*sin(o2))+o2*(cos(o1)*sin(o2)+sin(o1)*cos(o2)))
-	+a2*(sin(o2)*sin(o1)-cos(o1)*cos(o2)))/(m1*((l1/2.)**2)+I1)
-	
-	# a1 = (15/2)*((1/8)*(cos(t1)*sin(t2)*o1*o2 - sin(o1)*sin(o2)*o1*o2 
-	# - cos(o1)*cos(o2)*a2 - sin(o2)*sin(o1)*a2) - (g/l)*sin(o2))
-	
-	# if DEBUG:
-		# print('o1*o2, a2 = ', o1*o2, a2)
-		# print('alpha1 update: ', a1)
-		# print()
-		
-	return a1
-	
-def alpha2_update(theta1,theta2,omega1,omega2,alpha1,m1,m2,l1,l2):
-	""" Returns alpha2, the angular acceleration of the first arm. """
-	
-	t1 = theta1
-	t2 = theta2
-	o1 = omega1
-	o2 = omega2
-	a1 = alpha1
-	
 	I2 = (1./3)*m2*l2**2
 	
-	a2 = (1./8)*m1*l2*l1*(o1*(o2*(sin(o2)*cos(o1)+cos(o1)*sin(o1))+o1*(cos(o2)*sin(o1)+sin(o2)*cos(o1)))
-	+a1*(sin(o1)*sin(o2)-cos(o2)*cos(o1)))/(m2*((l2/2.)**2)+I2)
-	
-	# a2 = (15/2)*((1/8)*(cos(t2)*sin(t1)*o1*o2 - sin(o1)*sin(o2)*o1*o2
-	# - cos(o1)*cos(o2)*a1 - sin(o2)*sin(o1)*a1) - (g/l)*sin(o1))
-	
-	# if DEBUG:
-		# print('alpha2 update: ', a2)
-		# print()
-	return a2
-	
-# #begin region: Methods for leap-frog method of ODE solving 
-# def LF_theta_update(theta,omega,tau):
-	# """ Returns theta_(n+2), given theta_n and omega_(n+1) and tau."""
-	# # if DEBUG:
-		# # print('theta update: ',theta + 2*tau*omega)
-		# # print()
-	# return theta + 2*tau*omega
-	
-# def LF_omega_update(omega,alpha,tau):
-	# """ Returns omega_(n+1), the angular speed of an arm, given omega_(n-1) and
-	# alpha_n. and tau."""
-	# # if DEBUG:
-		# # print('omega update: ',omega + 2*tau*alpha)
-		# # print()
-	# return omega + 2*tau*alpha
-	
-# def LF_data(theta1,theta2,omega1,omega2,alpha1,alpha2,dt,steps):
-	# """" Computes the positions of the double pendulum system at each
-	# timestep, for steps number of iterations, dt [s] apart."""
-	
-	# # Angular position
-	# t1 = theta1 
-	# t2 = theta2
-	# t1_old = t1
-	# t2_old = t2 
-	
-	# # Angular velocity 
-	# o1 = omega1 
-	# o2 = omega2
-	
-	# # Angular acceleration 
-	# a1 = alpha1
-	# a2 = alpha2
-	
-	# # Timestep
-	# tau = dt
-	
-	# xData1, yData1 = toXY(t1)[0], toXY(t1)[1]
-	# xData2, yData2 = toXY(t2)[0]+xData1, toXY(t2)[1]+yData1
-	
-	# # Leap-frog method gets odd positions and even velocities, so we iterate 
-	# # twice as many steps to get steps number of positions.
-	# for i in range(1,2*steps+1):
-		# try:
-			# if i % 2 != 0:
-				# o1 = LF_omega_update(o1,a1,tau)
-				# o2 = LF_omega_update(o2,a2,tau)
-			# else: 
-				# temp_t1 = LF_theta_update(t1,o1,tau)
-				# t2 = LF_theta_update(t2,o2,tau)
-				
-				# temp_a1 = LF_alpha1_update(t1,t2,o1,o2,a2)
-				# temp_a2 = LF_alpha2_update(t1,t2,o1,o2,a1)
-				
-				# a1 = temp_a1
-				# a2 = temp_a2
-				# t1 = temp_t1
-				
-				# xData1, yData1 = toXY(t1)[0],toXY(t1)[1]
-				# xData2, yData2 = toXY(t2)[0]+xData1,toXY(t2)[1]+yData1
-				
-				# data1 = xData1,yData1 # endpoint of arm 1
-				# data2 = xData2,yData2 # endpoint of arm 2
-				
-				# # return the data
-				# yield data1,data2 
-				
-			# if DEBUG:
-				# print('Iter ',i,': t1,t2= ',t1,t2)
-				# print('o1,o2= ',o1,o2,' a1,a2= ',a1,a2)
-				# print()
-			# # if i % 10 == 0:
-				# # yield data1,data2
-		# except ValueError:		
-			# print('value error at iteration ',i)
-			# break
-# #end region: Methods for leap-frog method of ODE solving 
-
-#begin region: Methods for Runge-Kutta method of ODE solving
-def RK_omega1_update(theta1,theta2,omega1,omega2,alpha2,tau,m1,m2,l1,l2):
-
-	t1 = theta1
-	t2 = theta2
-	o1 = omega1
-	o2 = omega2
-	a2 = alpha2
-	
-	h = tau
-
-	def k(do):
-		return h*alpha1_update(t1,t2,o1+do,o2,a2,m1,m2,l1,l2)
-	k1 = k(0)
-	k2 = k(k1/2)
-	k3 = k(k2/2)
-	k4 = k(k3)
+	a1 = (1./8)*m2*l1*l2*(o2*(o1*(sin(o1)*cos(o2)+cos(o2)*sin(o2))+
+	o2*(cos(o1)*sin(o2)+sin(o1)*cos(o2)))+a2*(sin(o2)*sin(o1)-
+	cos(o1)*cos(o2)))/(m1*((l1/2.)**2)+I1)
 		
-	return o1+(k1+2*k2+2*k3+k4)/6
+	a2 = (1./8)*m1*l2*l1*(o1*(o2*(sin(o2)*cos(o1)+cos(o1)*sin(o1))+
+	o1*(cos(o2)*sin(o1)+sin(o2)*cos(o1)))+a1*(sin(o1)*sin(o2)-
+	cos(o2)*cos(o1)))/(m2*((l2/2.)**2)+I2)
 	
-def RK_omega2_update(theta1,theta2,omega1,omega2,alpha1,tau,m1,m2,l1,l2):
-
-	t1 = theta1
-	t2 = theta2
-	o1 = omega1
-	o2 = omega2
-	a1 = alpha1
+	return o1,o2,a1,a2
 	
-	dt = tau
-
-	def k(do):
-		return dt*alpha2_update(t1,t2,o1+do,o2,a1,m1,m2,l1,l2)
-	k1 = k(0)
-	k2 = k(k1/2)
-	k3 = k(k2/2)
-	k4 = k(k3)
+def RK4_update(r1,r2,v1,v2,a1,a2,t,p,derivatives):
+	"""Return the next r1,r2,v1,v2,a1,a2 given a function that returns values
+	of v1,v2,a1,a2. t is the step size, and p is an array of additional 
+	parameters."""
 		
-	return o2+(k1+2*k2+2*k3+k4)/6
-	
-def RK_theta1_update(theta1,theta2,omega1,omega2,alpha2,tau,m1,m2,l1,l2):
-
-	t1 = theta1
-	t2 = theta2
-	o1 = omega1
-	o2 = omega2
-	a2 = alpha2
-	
-	dt = tau
-
-	def k(dt):
-		return dt*RK_omega1_update(t1+dt,t2,o1,o2,a2,dt,m1,m2,l1,l2)
-	k1 = k(0)
-	k2 = k(k1/2)
-	k3 = k(k2/2)
-	k4 = k(k3)
+	def k(dh): 
+		h = t
+		# return kr1(h),kr2(h),kv1(h),kv2(h)
+		return (h*derivatives(r1+dh[0],r2,v1,v2,a1,a2,t,p)[0],
+		h*derivatives(r1,r2+dh[1],v1,v2,a1,a2,t,p)[1],
+		h*derivatives(r1,r2,v1+dh[2],v2,a1,a2,t,p)[2],
+		h*derivatives(r1,r2,v1,v2+dh[3],a1,a2,t,p)[3])
 		
-	return o1+(k1+2*k2+2*k3+k4)/6
-	
-def RK_theta2_update(theta1,theta2,omega1,omega2,alpha1,tau,m1,m2,l1,l2):
+	# each k_i here is a list of k(h_i) evaluated for each state variable
+	k1 = k([0,0,0,0]) 
+	k2 = k([x/2. for x in k1])
+	k3 = k([x/2. for x in k2])
+	k4 = k([x for x in k3])
 
-	t1 = theta1
-	t2 = theta2
-	o1 = omega1
-	o2 = omega2
-	a1 = alpha1
+	# current state
+	s = [r1,r2,v1,v2]
 	
-	dt = tau
-
-	def k(dt):
-		return dt*RK_omega2_update(t1,t2+dt,o1,o2,a1,dt,m1,m2,l1,l2)
-	k1 = k(0)
-	k2 = k(k1/2)
-	k3 = k(k2/2)
-	k4 = k(k3)
+	# new state
+	snew = []
 		
-	return o1+(k1+2*k2+2*k3+k4)/6
+	for i in range(0,len(s)):
+		snew.append(s[i]+(k1[i]+2*(k2[i]+k3[i])+k4[i])/6.)
+		
+	r1,r2,v1,v2 = snew
+		
+	d = derivatives(r1,r2,v1,v2,a1,a2,t,p)
+	
+	snew.append(d[-2]) # get new a1
+	snew.append(d[-1]) # get new a2
 
+	return snew
+		
+# make mass, etc. into a params array
 def RK_data(m1,m2,l1,l2,theta1,theta2,omega1,omega2,tau,steps):
 	"""" Computes the positions of the double pendulum system at each
 	timestep, for steps number of iterations, dt [s] apart."""
+	
+	# Params; eventually just pass this in
+	params = [m1,m2,l1,l2]
 	
 	# Angular position, n = 0
 	t1 = theta1 
@@ -272,11 +138,10 @@ def RK_data(m1,m2,l1,l2,theta1,theta2,omega1,omega2,tau,steps):
 	for i in range(0,steps): 
 		try:
 			
-			# Angular positions, n = m + 1 
-			t1 = RK_theta1_update(t1,t2,o1,o2,a2,dt,m1,m2,l1,l2)
-			t2 = RK_theta1_update(t1,t2,o1,o2,a1,dt,m1,m2,l1,l2)
+			# Update each variable
+			t1,t2,o1,o2,a1,a2 = RK4_update(t1,t2,o1,o2,a1,a2,dt,params,derivs)
 			
-			# Update our position state
+			# Update our position state data
 			xData1, yData1 = toXY(t1,l1)[0],toXY(t1,l1)[1]
 			xData2, yData2 = toXY(t2,l2)[0]+xData1,toXY(t2,l2)[1]+yData1
 			
@@ -287,14 +152,6 @@ def RK_data(m1,m2,l1,l2,theta1,theta2,omega1,omega2,tau,steps):
 				print('Iter ',i,': t1,t2= ',t1,t2)
 				print('o1,o2= ',o1,o2,' a1,a2= ',a1,a2)
 				print()
-			
-			# Angular acceleration, n = m + 2 
-			a1 = alpha1_update(t1,t2,o1,o2,a2,m1,m2,l1,l2)
-			a2 = alpha2_update(t1,t2,o1,o2,a1,m1,m2,l1,l2)
-			
-			# Angular velocity, n = m + 2
-			o1 = RK_omega1_update(t1,t2,o1,o2,a2,dt,m1,m2,l1,l2)
-			o2 = RK_omega1_update(t1,t2,o1,o2,a1,dt,m1,m2,l1,l2)
 			
 			# Return the data
 			yield data1,data2 
@@ -309,7 +166,7 @@ def alpha_init(theta,length):
 	""" Returns the initial angular acceleration due only to gravitational 
 	torque exerted on the center of mass of a uniform arm of length length
 	about one end, held at angle theta from the vertical."""
-	return -6*g*sin(theta)/length
+	return 6*g*sin(theta)/length
 	
 def toXY(theta,length):
 	""" Returns the (x,y) coordinate of the end of a single pendulum arm."""
@@ -373,17 +230,17 @@ def run(data):
 
 # Simulation parameters
 mass1 = 1 # [kg]
-mass2 = 2 # [kg]
+mass2 = 1 # [kg]
 len1 = 1 # [m]
 len2 = 1 # [m]
 theta1_0 = m.pi/4 # [rad] from vertical
-theta2_0 = m.pi/6 # ditto
+theta2_0 = m.pi/3 # ditto
 omega1_0 = 0 # [rad/s] 
 omega2_0 = 0 # ditto
 alpha1_0 = alpha_init(theta1_0,len1) # [rad/s^2]
 alpha2_0 = alpha_init(theta2_0,len2) # ditto
-dt = 0.5 # [s]
-iters = 1000 # times to update the systems
+dt = 0.05 # [s]
+iters = 10000 # times to update the systems
 
 # data_gen = LF_data(theta1_0,theta2_0,omega1_0,omega2_0,alpha1_0,alpha2_0,dt,iters)
 data_gen = RK_data(mass1,mass2,len1,len2,theta1_0,theta2_0,omega1_0,omega2_0,
