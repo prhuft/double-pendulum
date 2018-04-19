@@ -23,6 +23,7 @@ length for both pendula.
 from matplotlib import pyplot as plt
 import matplotlib.animation as animation
 import numpy as np
+from random import random as rnd
 import math as m
 import time as t
 from math import cos
@@ -31,6 +32,7 @@ from math import sin
 ## Global Constants
 
 g = 9.8 # [m/s]
+TRIPPY = 1
 DEBUG = 0 # set to 1 if we're debugging
 
 ## Methods
@@ -192,28 +194,17 @@ def init():
 	# return line
 	return pen_line,trail1_line,trail2_line
 
-# This seems like a really bad place to initialize variables
-
-# Create the figure and axes objects
-fig, ax = plt.subplots()
-ax.set_facecolor('black')
-fig.patch.set_facecolor('black')
-
-# Initialize the 2DLines, which are lists of tuples (hence the comma)
-pen_line, = ax.plot([],[],color='white',lw=2)
-trail1_line, = ax.plot([],[],color='orange',lw=1)
-trail2_line, = ax.plot([],[],color='purple',lw=1)
-
-# Initialize the data which will fill the lines
-pen_xdata, pen_ydata = [],[]
-trail1_xdata, trail1_ydata = [],[]
-trail2_xdata, trail2_ydata = [],[]
-
 def run(data):
 	# update the data
 	x1, y1 = data[0]
 	x2, y2 = data[1]
 
+	# Random colored lines, updated each iteration\
+	if (TRIPPY):
+		# pen_line, = ax.plot([],[],color=(rnd(),rnd(),rnd()),lw=1)
+		trail1_line, = ax.plot([],[],color=(rnd(),rnd(),rnd()),lw=1)
+		trail2_line, = ax.plot([],[],color=(rnd(),rnd(),rnd()),lw=1)
+	
 	pen_xdata = [[0,x1,x2]]
 	pen_ydata = [[0,y1,y2]]
 	pen_line.set_data(pen_xdata,pen_ydata)
@@ -229,6 +220,29 @@ def run(data):
 	return pen_line,trail1_line,trail2_line
 
 ## The main code
+
+# Create the figure and axes objects
+fig, ax = plt.subplots()
+ax.set_facecolor('black')
+fig.patch.set_facecolor('black')
+
+# Create the figure and its subplots
+# fig = plt.figure()
+# ax_p = fig.add_subplot(1,)
+# ax_t = fig.add_subplot()
+# ax_o = fig.add_subplot()
+# ax_a = fig.add_subplot()
+
+
+# Initialize the 2DLines, which are lists of tuples (hence the comma)
+pen_line, = ax.plot([],[],color='white',lw=2)
+trail1_line, = ax.plot([],[],color='orange',lw=1)
+trail2_line, = ax.plot([],[],color='purple',lw=1)
+
+# Initialize the data which will fill the lines
+pen_xdata, pen_ydata = [],[]
+trail1_xdata, trail1_ydata = [],[]
+trail2_xdata, trail2_ydata = [],[]
 
 # Simulation parameters
 mass1 = 1 # [kg]
@@ -252,3 +266,5 @@ dt,iters)
 ani = animation.FuncAnimation(fig, run, data_gen, blit=False, interval=dt*1000,
                               repeat=False, init_func=init)
 plt.show()
+
+# ani.save('dbl_pendul.mp4', writer=writer)
