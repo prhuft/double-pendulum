@@ -1,5 +1,5 @@
 """"
- Double Compound Pendulum Simulation. 
+Double Compound Pendulum Simulation. 
 	
 Preston Huft, Spring 2018. 
 
@@ -9,17 +9,15 @@ length. Note that there aren't any mass terms in the equations, as all
 mass terms cancel out under this condition. 
 
 To-Do List: 
-- Replace leap-frog method with Runge-Kutta (4th order).
-- Generalize acceleration equations to not assume the same mass and arm 
-length for both pendula. 
 - Become bored enough to turn this into a double "springdulum" simulation. 
 - Add subplots of angular position, velocity, and acceleration
 - figure out how to force the plot to be square (i.e. not distorted)
-- use a state variable to keep track of theta, omega, alpha?
+- calculate frames prior to animation
 """
 
 ## Libraries 
 
+from rk4_two_bodies import rk4_update as rk4
 from matplotlib import pyplot as plt
 import matplotlib.animation as animation
 import numpy as np
@@ -64,48 +62,12 @@ def derivs(state,tau,params):
 	I2+(1./4)*m2*l1**2))
 	
 	return o1,o2,a1,a2
-	
-def RK4_update(state,h,p,derivatives):
-	"""Return the next r1,r2,v1,v2,a1,a2 given a function that returns values
-	of v1,v2,a1,a2. t is the step size, and p is an array of additional 
-	parameters."""
-	
-	r1,r2,v1,v2,a1,a2 = state
-		
-	def k(dh): 
-		# return kr1(h),kr2(h),kv1(h),kv2(h)
-		return (h*derivatives([r1+dh[0],r2,v1,v2,a1,a2],h,p)[0],
-		h*derivatives([r1,r2+dh[1],v1,v2,a1,a2],h,p)[1],
-		h*derivatives([r1,r2,v1+dh[2],v2,a1,a2],h,p)[2],
-		h*derivatives([r1,r2,v1,v2+dh[3],a1,a2],h,p)[3])
-		
-	# each k_i here is a list of k(h_i) evaluated for each state variable
-	k1 = k([0,0,0,0]) 
-	k2 = k([x/2. for x in k1])
-	k3 = k([x/2. for x in k2])
-	k4 = k([x for x in k3])
-	
-	# new state
-	snew = []
-	
-	# Update t1,t2,o1,o2
-	for i in range(0,4):
-		snew.append(state[i]+(k1[i]+2*(k2[i]+k3[i])+k4[i])/6.)
-	
-	# not sure if this is needed
-	# r1,r2,v1,v2 = snew
-		
-	d = derivatives(state,t,p)
-	
-	snew.append(d[-2]) # get new a1
-	snew.append(d[-1]) # get new a2
-
-	return snew
 		
 # make mass, etc. into a params array
-def RK_data(params,state,tau,steps):
+def get_data(params,state,tau,steps,num_update):
 	"""" Computes the positions of the double pendulum system at each
-	timestep, for steps number of iterations, dt [s] apart."""
+	timestep, for steps number of iterations, dt [s] apart. num_update
+	is the numerical method function to be used."""
 	
 	# Get pendulum parameters
 	m1,m2,l1,l2 = params
@@ -132,12 +94,7 @@ def RK_data(params,state,tau,steps):
 	# Forward feed the RK4 method for m = 0 to m = steps
 	for i in range(0,steps): 
 		try:
-			# Make arm lengths vary sinuisoidally
-			# fr = m.pi/50
-			# if (i > 100):
-				# params[2:] = [.5,.5] #[params[2]*(cos(steps*fr))**2,params[3]*(sin(steps*fr)**2)]
-			# Update each variable
-			t1,t2,o1,o2,a1,a2 = RK4_update([t1,t2,o1,o2,a1,a2],dt,params,derivs)
+			t1,t2,o1,o2,a1,a2 = num_update([t1,t2,o1,o2,a1,a2],dt,params,derivs)
 			
 			# Update our position state data
 			xData1, yData1 = toXY(t1,l1)[0],toXY(t1,l1)[1]
@@ -224,13 +181,6 @@ fig, ax = plt.subplots()
 ax.set_facecolor('black')
 fig.patch.set_facecolor('black')
 
-# Create the figure and its subplots
-# fig = plt.figure()
-# ax_p = fig.add_subplot(1,)
-# ax_t = fig.add_subplot()
-# ax_o = fig.add_subplot()
-# ax_a = fig.add_subplot()
-
 # Initialize the 2DLines, which are lists of tuples (hence the comma)
 pen_line, = ax.plot([],[],color='white',lw=2)
 trail1_line, = ax.plot([],[],color='yellow',lw=1)
@@ -264,7 +214,7 @@ state_0 = [t1_0,t2_0,o1_0,o2_0,a1_0,a2_0]
 dt = 0.01 # [s]
 iters = 10000 # times to update the systems
 
-data_gen = RK_data(params,state_0,dt,iters)
+data_gen = get_data(params,state_0,dt,iters,rk4)
 
 # timekeeping
 t_arr = [] 
