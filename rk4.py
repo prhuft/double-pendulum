@@ -9,6 +9,7 @@ contained in 'state' and other system parameters contained in 'p', where
 'derivatives' is a method which returns an array of derivatives as described.
 """
 
+DEBUG = 1
 
 def rk4_update(state,h,params,derivatives):
 	""" state = [[f1^(0),f2^(0),...,fn^(0)],[f1^(1),f2^(1),...fn^(1)],
@@ -74,6 +75,16 @@ def rk4_update(state,h,params,derivatives):
 	k2 = k_mat(dh_mat(k1,1/2.))
 	k3 = k_mat(dh_mat(k2,1/2.))
 	k4 = k_mat(k3) # passing in k3 is equivalent to passing in dh_mat(k3,1)
+	
+	if DEBUG: 
+		print('dh1: ',dh_mat_0)
+		print('k1: ',k1)
+		print('dh2: ',dh_mat(k1,1/2.))
+		print('k2: ',k2)
+		print('dh3: ',dh_mat(k2,1/2.))
+		print('k3: ',k3)
+		print('dh4: ',k3)
+		print('k4: ',k4)
 	
 	new_state = []
 	for m in range(0,len(state[:-1])): # iter over deriv orders up to m-1, inclusive

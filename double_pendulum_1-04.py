@@ -149,7 +149,7 @@ params = [m1,m2,l1,l2]
 state_0 = [[t1_0,t2_0],[o1_0,o2_0],[a1_0,a2_0]]
 
 dt = 0.01 # [s]
-iters = 10000 # times to update the systems
+iters = 1#10000 # times to update the systems
 
 data = get_data(state_0,dt,iters,params,rk4)
 
@@ -169,7 +169,7 @@ ax.set_aspect(aspect='equal')
 fig.patch.set_facecolor('black')
 
 # Initialize the lines to be plotted
-pen_line, = ax.plot([],[],color='white',lw=2)
+pen_line, = ax.plot([],[],color='white',lw=3)
 trail1_line, = ax.plot([],[],color='yellow',lw=1)
 trail2_line, = ax.plot([],[],color='magenta',lw=1)
 
@@ -202,6 +202,6 @@ def update(i):
 			trail2_line,)
 
 anim = animation.FuncAnimation(fig, update, frames=range(0,iters+1), 
-	init_func=init, blit=True, interval=1000*dt)
+	init_func=init, blit=True, interval=1000*dt, repeat=True)
 plt.show()
 
