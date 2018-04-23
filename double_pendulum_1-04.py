@@ -1,5 +1,5 @@
 """"
-Double Compound Pendulum Simulation, v1.03 (i.e. the working version)
+Double Compound Pendulum Simulation, v1.04 (1st version to use my rk4.py lib)
 	
 Preston Huft, Spring 2018. 
 
@@ -16,7 +16,7 @@ To-Do List:
 
 ## Libraries 
 
-from rk4_two_bodies import rk4_update as rk4
+from rk4 import rk4_update as rk4
 from matplotlib import pyplot as plt
 import matplotlib.animation as animation
 import numpy as np
@@ -39,7 +39,9 @@ def derivs(state,tau,params):
 	"""Returns a list of the first and second derivatives for each pendulum,
 	given the current state,timestep tau, and system params."""
 	# The state of the pendulum
-	t1,t2,o1,o2,a1,a2 = state
+	t1,t2 = state[0]
+	o1,o2 = state[1]
+	a1,a2 = state[2]
 	
 	# The masses and arm lengths
 	m1,m2,l1,l2 = params
@@ -60,9 +62,9 @@ def derivs(state,tau,params):
 	cos(o2)*cos(o1)))-m2*g*l2*sin(t2)/2.-(m1/4.)*a1*l1**2)/(m2*((l2/2.)**2)+
 	I2+(1./4)*m2*l1**2))
 	
-	return o1,o2,a1,a2
+	return [o1,o2],[a1,a2]
 		
-def get_data(params,state,tau,steps,num_update):
+def get_data(state,tau,steps,params,num_update):
 	""" Returns a list of the states of the double pendulum system at each
 	timestep, for steps number of iterations, dt [s] apart. num_update is the
 	numerical method function to be used. """
@@ -71,7 +73,9 @@ def get_data(params,state,tau,steps,num_update):
 	m1,m2,l1,l2 = params
 	
 	# The initial state
-	t1,t2,o1,o2,a1,a2 = state
+	t1,t2 = state[0]
+	o1,o2 = state[1]
+	a1,a2 = state[2]
 	
 	if DEBUG:
 		print('Iter 0',': t1,t2= ',t1,t2)
@@ -89,7 +93,10 @@ def get_data(params,state,tau,steps,num_update):
 	for i in range(0,steps): 
 		try:
 			# Update each variable
-			t1,t2,o1,o2,a1,a2 = num_update([t1,t2,o1,o2,a1,a2],dt,params,derivs)
+			new_state = num_update([[t1,t2],[o1,o2],[a1,a2]],dt,params,derivs)
+			t1,t2 = new_state[0]
+			o1,o2 = new_state[1]
+			a1,a2 = new_state[2]
 			
 			xData1 += [toXY(t1,l1)[0]]
 			yData1 += [toXY(t1,l1)[1]]
@@ -138,14 +145,13 @@ a2_0 = alpha_init(t2_0,l2) # ditto
 # Pendulum attributes
 params = [m1,m2,l1,l2]
 
-# Initial state
-state_0 = [t1_0,t2_0,o1_0,o2_0,a1_0,a2_0]
+# Initial state, with pendula state variables grouped by derivative order
+state_0 = [[t1_0,t2_0],[o1_0,o2_0],[a1_0,a2_0]]
 
 dt = 0.01 # [s]
 iters = 10000 # times to update the systems
 
-data = get_data(params,state_0,dt,iters,rk4)
-# fig,ax = init(data,dt,params)
+data = get_data(state_0,dt,iters,params,rk4)
 
 ## SIMULATION SETUP
 
