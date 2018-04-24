@@ -11,7 +11,7 @@ unrealistic, no less) result from double_pendulum_1-03 which uses rk4_two_bodies
 
 """
 
-DEBUG = 1
+DEBUG = 0
 
 def rk4_update(state,h,params,derivatives):
 	""" state = [[f1^(0),f2^(0),...,fn^(0)],[f1^(1),f2^(1),...fn^(1)],
@@ -42,12 +42,12 @@ def rk4_update(state,h,params,derivatives):
 			of the ith object, evaluated at q+h."""
 			
 		k_mat = []
-		for m in range(0,len(state[:-1])): # iter over orders of derivs up to m-1, inclusive
+		for i in range(0,len(state[:-1])): # iter over orders of derivs up to m-1, inclusive
 			k_list = []
-			for n in range(0,len(state[m])): # iter through the object indices
+			for j in range(0,len(state[i])): # iter through the object indices
 				temp_s = list(state) # copy the state list
-				temp_s[m][n] = state[m][n]+dh_mat[m][n] # add dh to the ith f^(j)
-				k_list.append(h*derivatives(temp_s,h,params)[m][n])
+				temp_s[i][j] = state[i][j]+dh_mat[i][j] # add dh to the ith f^(j)
+				k_list.append(h*derivatives(temp_s,h,params)[i][j])
 			k_mat.append(list(k_list)) # append a copy of l; this is the mth k list
 		return k_mat
 				
@@ -67,8 +67,8 @@ def rk4_update(state,h,params,derivatives):
 	
 	# Create the initial list of zeros to pass into k()
 	dh_mat_0 = []
-	for m in range(0,len(state[:-1])): # up to to m-1, inclusive
-		dh_mat_0.append([0]*len(state[m]))
+	for i in range(0,len(state[:-1])): # up to to m-1, inclusive
+		dh_mat_0.append([0]*len(state[i]))
 		
 	# Generate the k matrices, where k(dh) def: f(q_i+dh) for systems which do 
 	# not depend explicitly on the parameter (e.g. time) with respect to which 
@@ -89,11 +89,11 @@ def rk4_update(state,h,params,derivatives):
 		print('k4: ',k4)
 	
 	new_state = []
-	for m in range(0,len(state[:-1])): # iter over deriv orders up to m-1, inclusive
+	for i in range(0,len(state[:-1])): # iter over deriv orders up to m-1, inclusive
 		new_derivs = []
-		for n in range(0,len(state[0])): # iter over coords up to q_n, inclusive
-			new_derivs.append(state[m][n]+(k1[m][n]+2*(k2[m][n]+k3[m][n])+
-								k4[m][n])/6.)
+		for j in range(0,len(state[0])): # iter over coords up to q_n, inclusive
+			new_derivs.append(state[i][j]+(k1[i][j]+2*(k2[i][j]+k3[i][j])+
+								k4[i][j])/6.)
 		new_state.append(list(new_derivs))
 		
 	# Get the mth derivatives with the analytical method passed in
