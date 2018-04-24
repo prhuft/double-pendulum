@@ -1,12 +1,14 @@
 """ 
-Runge-Kutta Numerical ODE Solving Method
+Runge-Kutta Numerical ODE Solving Method, v1.00
 
 Preston Huft, Spring 2018.
 
-The method below can be called from another python file to generate the next 
-iteration of parameters after a given step 'h', for a system with state variables
-contained in 'state' and other system parameters contained in 'p', where 
-'derivatives' is a method which returns an array of derivatives as described.
+Known bugs:
+- I think there may be an error in the multiplying of k values somewhere, or in
+adding the appropriate step values to the state variables in calculating k_mat.
+The double_pendulum_1-04 simulation gives a substantially different (and severely
+unrealistic, no less) result from double_pendulum_1-03 which uses rk4_two_bodies. 
+
 """
 
 
@@ -45,7 +47,7 @@ def rk4_update(state,h,params,derivatives):
 				temp_s = list(state) # copy the state list
 				temp_s[m][n] = state[m][n]+dh_mat[m][n] # add dh to the ith f^(j)
 				k_list.append(h*derivatives(temp_s,h,params)[m][n])
-			k_mat.append(list(k_list)) # append a copy of l; this is the sth k list
+			k_mat.append(list(k_list)) # append a copy of l; this is the mth k list
 		return k_mat
 				
 	def dh_mat(k_mat,c):
@@ -64,8 +66,8 @@ def rk4_update(state,h,params,derivatives):
 	
 	# Create the initial list of zeros to pass into k()
 	dh_mat_0 = []
-	for i in range(0,len(state[:-1])): # up to to m-1, inclusive
-		dh_mat_0.append([0]*len(state[i]))
+	for m in range(0,len(state[:-1])): # up to to m-1, inclusive
+		dh_mat_0.append([0]*len(state[m]))
 		
 	# Generate the k matrices, where k(dh) def: f(q_i+dh) for systems which do 
 	# not depend explicitly on the parameter (e.g. time) with respect to which 

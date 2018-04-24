@@ -1,13 +1,14 @@
 """"
-Double Compound Pendulum Simulation, v1.04 (1st version to use my rk4.py lib)
+Double Compound Pendulum Simulation, v1.04
 	
 Preston Huft, Spring 2018. 
 
 Numerical simulation of compound double pendulum, solved iteratively with
 the Runge-Kutta (4th order) method. 
 
-Version notes: Values are computed prior to plotting, then plotted using
-matplotlib.animation. 
+Version notes: First version to utilize rk4.py (rather than rk4_two_bodies.py)
+which is a generalized RK4 update method. Format of state variable changed to 
+accomadate this update. 
 
 To-Do List: 
 - Become bored enough to turn this into a double "springdulum" simulation. 
