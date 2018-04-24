@@ -94,11 +94,6 @@ def get_data(params,state,tau,steps,num_update):
 	# Forward feed the RK4 method for m = 0 to m = steps
 	for i in range(0,steps): 
 		try:
-			# Make arm lengths vary sinuisoidally
-			# fr = m.pi/50
-			# if (i > 100):
-				# params[2:] = [.5,.5] #[params[2]*(cos(steps*fr))**2,params[3]*(sin(steps*fr)**2)]
-			# Update each variable
 			t1,t2,o1,o2,a1,a2 = num_update([t1,t2,o1,o2,a1,a2],dt,params,derivs)
 			
 			# Update our position state data
@@ -237,6 +232,4 @@ if TIMING:
 		dt_arr.append(t-last_t)
 		last_t = t
 		
-	# print('mean run_dt: ',np.mean(dt_arr))
-
 # ani.save('dbl_pendul.mp4', writer=writer)
