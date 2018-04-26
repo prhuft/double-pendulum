@@ -57,9 +57,6 @@ def rk4_update(state,h,p,derivatives):
 	# Update t1,t2,o1,o2
 	for i in range(0,4):
 		snew.append(state[i]+(k1[i]+2*(k2[i]+k3[i])+k4[i])/6.)
-	
-	# not sure if this is needed
-	# r1,r2,v1,v2 = snew
 		
 	d = derivatives(state,h,p)
 	

@@ -1,8 +1,12 @@
 The two outputs should be the same except that the rk4 will group the same-ordered derivatives in [].
 The problem is arrising in the addition going on in rk4 > k_mat(), specifically the line:
 	temp_s[m][n] = state[m][n]+dh_mat[m][n]
-This seems pretty straightforward, and appears to be doing the same thing that rk4_two_bodies > k()
-is doing. Take a closer look later.
+This seems pretty straightforward, and appears to be doing the same thing that rk4_two_bodies.k()
+is doing. 
+
+Update: copying the derivative expressions (a1,a2 analytical expr.) from 1-03 to 1-04, and verifying
+by eye the other contents of derivs() in each, proved that the issue emphatically is NOT related to 
+derivative expressions.
 
 rk4_two_bodies
 
