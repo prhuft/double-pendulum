@@ -24,7 +24,6 @@ def rk4_update(state,h,p,derivatives):
 	def k(dh): 
 		# print the modified states:
 		if DEBUG:
-			print('state[1][1], v2: ',state[3],v2)
 			# print('temp,0,0',[r1+dh[0],r2,v1,v2,a1,a2])
 			# print('temp,0,1',[r1,r2+dh[1],v1,v2,a1,a2])
 			# print('temp,1,0',[r1,r2,v1+dh[2],v2,a1,a2])

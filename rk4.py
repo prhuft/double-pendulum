@@ -42,15 +42,15 @@ def rk4_update(state,h,params,derivatives):
 					
 			where fi^(j)(q+h) is the jth derivative of the generalized position
 			of the ith object, evaluated at q+h."""
-		print('state[1][1],debugstate[1][1] ',state[1][1], debugstate[1][1])
 		k_mat = []
 		for i in range(0,len(state[:-1])): # iter over orders of derivs up to m-1, inclusive
 			k_list = []
 			for j in range(0,len(state[i])): # iter through the object indices
 				temp_s = list(state) # copy the state list
+				# temp_s[i][j] = 0
 				temp_s[i][j] = state[i][j]+dh_mat[i][j] # add dh to the ith f^(j)
 				#if DEBUG: print('temp',i,j,temp_s)
-				k_list.append(h*derivatives(temp_s,h,params)[i][j])
+				k_list.append(h*(derivatives(temp_s,h,params)[i][j]))
 			k_mat.append(list(k_list)) # append a copy of l; this is the mth k list
 		return k_mat
 				
