@@ -11,11 +11,15 @@ unrealistic, no less) result from double_pendulum_1-03 which uses rk4_two_bodies
 
 """
 
+<<<<<<< HEAD
 ## LIBRARIES
 
 ## GLOBAL VARIABLES
 
 DEBUG = 0
+=======
+DEBUG = 1
+>>>>>>> origin/master
 
 ## THE METHOD
 
@@ -38,6 +42,8 @@ def rk4_update(state,h,params,derivatives):
 		of the 'state' list which is passed in. 
 	"""
 	
+	debugstate = list(state)
+	
 	def k_mat(dh_mat):
 		""" The output is of the form: 
 			k_mat = [[f1^(0)(q+dh),f2^(0)(q+sh),...,fn^(0)(q+dh)],[f1^(1)(q+dh),
@@ -46,7 +52,7 @@ def rk4_update(state,h,params,derivatives):
 					
 			where fi^(j)(q+h) is the jth derivative of the generalized position
 			of the ith object, evaluated at q+h."""
-			
+		print('state[1][1],debugstate[1][1] ',state[1][1], debugstate[1][1])
 		k_mat = []
 		for i in range(0,len(state[:-1])): # iter over orders of derivs up to m-1, inclusive
 			k_list = []
@@ -54,6 +60,7 @@ def rk4_update(state,h,params,derivatives):
 				# temp_s = list(state) # copy the state list
 				temp_s = copy_nested_list(state)
 				temp_s[i][j] = state[i][j]+dh_mat[i][j] # add dh to the ith f^(j)
+				#if DEBUG: print('temp',i,j,temp_s)
 				k_list.append(h*derivatives(temp_s,h,params)[i][j])
 			k_mat.append(list(k_list)) # append a copy of l; this is the mth k list
 		return k_mat

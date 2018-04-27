@@ -197,7 +197,7 @@ run_dt = 0.045 # [s] ~ time each update takes, for which we can correct
 m1 = 1 #1 # [kg]
 m2 = 1 # [kg]
 l1 = 1 # [m]
-l2 = 1# [m]
+l2 = 1 # [m]
 t1_0 = m.pi/2 # [rad] from vertical
 t2_0 = m.pi/2 # ditto
 o1_0 = 0 # [rad/s] 
@@ -212,7 +212,7 @@ params = [m1,m2,l1,l2]
 state_0 = [t1_0,t2_0,o1_0,o2_0,a1_0,a2_0]
 
 dt = 0.01 # [s]
-iters = 10000 # times to update the systems
+iters = 1#10000 # times to update the systems
 
 data_gen = get_data(params,state_0,dt,iters,rk4)
 
