@@ -11,7 +11,7 @@ contained in 'state' and other system parameters contained in 'p', where
 To-do: generalize for single or multiple-body (>2) systems. This could be achieved
 with overload prototypes. 
 """
-DEBUG = 1
+DEBUG = 0
 
 def rk4_update(state,h,p,derivatives):
 	"""Return the next r1,r2,v1,v2,a1,a2 given a function that returns values

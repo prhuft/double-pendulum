@@ -150,7 +150,7 @@ params = [m1,m2,l1,l2]
 state_0 = [[t1_0,t2_0],[o1_0,o2_0],[a1_0,a2_0]]
 
 dt = 0.01 # [s]
-iters = 1#10000 # times to update the systems
+iters = 10000 # times to update the systems
 
 data = get_data(state_0,dt,iters,params,rk4)
 
