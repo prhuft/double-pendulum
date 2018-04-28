@@ -133,7 +133,7 @@ def toXY(theta,length):
 
 # Simulation parameters
 m1 = 1 #1 # [kg]
-m2 = .5 # [kg]
+m2 = 1 # [kg]
 l1 = 1 # [m]
 l2 = 1 # [m]
 t1_0 = m.pi/2 # [rad] from vertical
