@@ -19,11 +19,13 @@ To-Do List:
 
 ## LIBRARIES
 
+import helpfunclib as hfl
 from rk4 import rk4_update as rk4
 from matplotlib import pyplot as plt
 import matplotlib.animation as animation
 import numpy as np
 from random import random as rnd
+from copy import copy as cp
 import math as m
 import time as t
 from math import cos
@@ -94,10 +96,10 @@ def get_data(states,tau,steps,params,num_update):
 		o1,o2 = state[1]
 		a1,a2 = state[2]
 		
-		if DEBUG:
-			print('Iter 0',': t1,t2= ',t1,t2)
-			print('o1,o2= ',o1,o2,' a1,a2= ',a1,a2)
-			print()
+		# if DEBUG:
+			# print('Iter 0',': t1,t2= ',t1,t2)
+			# print('o1,o2= ',o1,o2,' a1,a2= ',a1,a2)
+			# print()
 		
 		# Timestep
 		dt = tau
@@ -120,17 +122,18 @@ def get_data(states,tau,steps,params,num_update):
 				xData2 += [toXY(t2,l2)[0]+xData1[i+1]]
 				yData2 += [toXY(t2,l2)[1]+yData1[i+1]]
 				
-				if DEBUG:
-					print('Iter ',i,': t1,t2= ',t1,t2)
-					print('o1,o2= ',o1,o2,' a1,a2= ',a1,a2)
-					print()
+				# if DEBUG:
+					# print('Iter ',i,': t1,t2= ',t1,t2)
+					# print('o1,o2= ',o1,o2,' a1,a2= ',a1,a2)
+					# print()
 				
 			except ValueError:		
 				print('value error at iteration ',i)
 				break
-				
-			arm1_data += xData1,yData1 # endpoints of arm 1
-			arm2_data += xData2,yData2 # endpoints of arm 2
+			
+		# Append the coordinate lists for the nth system  
+		arm1_data.append([xData1,yData1]) # endpoints of arm 1
+		arm2_data.append([xData2,yData2]) # endpoints of arm 2
 			
 	return arm1_data,arm2_data
 	
@@ -146,13 +149,14 @@ def get_initial_states(params,state_template,dstate,sys_size):
 		sys_size = the number of systems to generate."""
 	l1,l2 = params[2:]
 	
-	state = state_template
+	state = hfl.copy_nested_list(state_template)
 	states_0 = [state_template]
-	for i in range(0,sys_size):
-		state += dstate # add dstate each iteration
+	for i in range(0,sys_size-1): # append n-1 one times for system of size n
+		state = hfl.add_nested_lists(state,dstate) # add dstate each iteration
 		# overwrite [a1,a2] which depend on the initial angle
 		state[2] = [alpha_init(state[0][0],l1),alpha_init(state[0][1],l2)]
 		states_0.append(state)
+	if DEBUG: [print(x) for x in states_0]
 	return states_0
 	
 def alpha_init(theta,length):
@@ -170,7 +174,7 @@ def toXY(theta,length):
 
 # Simulation parameters 
 m1 = 1 #1 # [kg]
-m2 = .5 # [kg]
+m2 = 1 # [kg]
 l1 = 1 # [m]
 l2 = 1 # [m]
 
@@ -186,8 +190,8 @@ a1_0 = alpha_init(t1_0,l1) # [rad/s^2]
 a2_0 = alpha_init(t2_0,l2) # ditto
 
 # The difference in initial variables between "adjacent" systems
-dt1 = m.pi/360 # half a degree to radians
-dt2 = m.pi/360 # same
+dt1 = m.pi/360
+dt2 = m.pi/360
 do1 = 0
 do2 = 0
 da1 = 0 # a1_0 has to be calculated for each system in get_initial_states()
@@ -200,13 +204,13 @@ state1 = [[t1_0,t2_0],[o1_0,o2_0],[a1_0,a2_0]]
 delta_state = [[dt1,dt2],[do1,do2],[da1,da2]]
 
 # The number of different systems we want to generate
-total = 2
+total = 10
 
 # Generate the initial state for each double pendulum system
 states_0 = get_initial_states(params,state1,delta_state,total)
 
 dt = 0.01 # [s]
-iters = 10000 # times to update the systems
+iters = 10000#10000 # times to update the systems
 
 # Generate the data
 data = get_data(states_0,dt,iters,params,rk4)
@@ -214,18 +218,17 @@ data = get_data(states_0,dt,iters,params,rk4)
 ## SIMULATION SETUP
 
 # Initialize the figure
-x1pts,y1pts = [],[]
-x2pts,y2pts = [],[]
-arm1data,arm2data = data # positions for all pendula for all timesteps
 xpts,ypts = [],[]
 for armdata in data: # iterates twice
 	for data_n in armdata: # iterate through the data for all n systems
 		xpts.append(data_n[0])
 		ypts.append(data_n[1])
-x1pts,x2pts = xpts[:int(len(xpts)/2)],xpts[int(len(xpts)/2+1):]
-y1pts,y2pts = ypts[:int(len(xpts)/2)],xpts[int(len(xpts)/2+1):]
+# xpts and ypts should now each be of length 2n
+n = int(len(xpts)/2)
+x1pts,x2pts = xpts[:n],xpts[n:]
+y1pts,y2pts = ypts[:n],ypts[n:]
 
-iters = len(x1pts) # this could have used any of the point arrays.
+if DEBUG: print("pt. lengths: ",len(x1pts),len(x2pts),len(y1pts),len(y2pts))
 
 fig = plt.figure()
 ax = fig.add_subplot(111)
@@ -234,17 +237,16 @@ ax.set_aspect(aspect='equal')
 fig.patch.set_facecolor('black')
 
 # Initialize the lines to be plotted 
-pen_line = []
-trail1_line = []
-trail2_line = []
-for i in range(0,total):
-	pen_line.append(ax.plot([],[],color='white',lw=3))
-	trail1_line.append(ax.plot([],[]))#,color='yellow',lw=1)
-	trail2_line.append(ax.plot([],[]))#,color='magenta',lw=1)
-
-# pen_line, = ax.plot([],[],color='white',lw=3)
-# trail1_line, = ax.plot([],[],color='yellow',lw=1)
-# trail2_line, = ax.plot([],[],color='magenta',lw=1)
+pen_lines = []
+trail1_lines = []
+trail2_lines = []
+for k in range(0,total):
+	trail1_line, = ax.plot([],[],lw=1)
+	trail2_line, = ax.plot([],[],lw=1)
+	trail1_lines.append(cp(trail1_line))
+	trail2_lines.append(cp(trail2_line))
+	pen_line, = ax.plot([],[],color='white',lw=3)
+	pen_lines.append(cp(pen_line))
 
 def init():
 	""" Set the axes limits. """
@@ -256,29 +258,26 @@ def init():
 
 	ax.set_ylim(-2*l*1.1,2*l*1.1)
 	ax.set_xlim(-2*l*1.1,2*l*1.1)
-	# return (pen_line,
-			# trail1_line,
-			# trail2_line,)
-	return pen_line + trail1_line + trail2_line
 
+	return tuple(trail1_lines + trail2_lines + pen_lines)
 	
+# indexing error is here
 def update(i):
 	""" Uses values established previously as globals."""
 	j = i + 1;
 	# Set the lines to plot
 	for k in range(0,total):
-		# The line describing the kth double pendulum
-		pen_line[k].set_data([0,x1pts[k][i],x2pts[k][i]],
-							 [0,y1pts[k][i],y2pts[k][i]])
 		# The lines from the arm endpoints
-		trail1_line[k].set_data(x1pts[k][:j],y1pts[k][:j])
-		trail2_line[k].set_data(x2pts[k][:j],y2pts[k][:j])
-	# return (pen_line,
-			# trail1_line,
-			# trail2_line,)
-	return pen_line + trail1_line + trail2_line
+		trail1_lines[k].set_data(x1pts[k][:j],y1pts[k][:j])
+		trail2_lines[k].set_data(x2pts[k][:j],y2pts[k][:j])
+		
+		# The line describing the kth double pendulum
+		pen_lines[k].set_data([0,x1pts[k][i],x2pts[k][i]],
+							  [0,y1pts[k][i],y2pts[k][i]])
+
+	return tuple(trail1_lines + trail2_lines + pen_lines)
 
 anim = animation.FuncAnimation(fig, update, frames=range(0,iters+1), 
-	init_func=init, blit=True, interval=1000*dt, repeat=True)
+	init_func=init, blit=True, interval=1000*dt, repeat=False)
 plt.show()
 
