@@ -24,19 +24,15 @@ from rk4 import rk4_update as rk4
 from matplotlib import pyplot as plt
 import matplotlib.animation as animation
 import numpy as np
-from random import random as rnd
 from copy import copy as cp
 import math as m
-import time as t
 from math import cos
 from math import sin
 
 ## GLOBAL CONSTANTS
 
 g = 9.8 # [m/s]
-TRIPPY = 0
 DEBUG = 0 # set to 1 if we're debugging
-TIMING = 0 # " " " " " trying to measure update time
 
 ## METHODS
 
@@ -170,15 +166,12 @@ def toXY(theta,length):
 	return length*sin(theta), -length*cos(theta)
 
 ## SYSTEM INITIALIZATION
-# run_dt = 0.045 # [s] ~ time each update takes, for which we can correct
 
-# Simulation parameters 
+# Simulation parameters - assume each double pendulum identical
 m1 = 1 #1 # [kg]
-m2 = 1 # [kg]
+m2 = .5 # [kg]
 l1 = 1 # [m]
 l2 = 1 # [m]
-
-# Pendulum attributes -- assume each double pendulum system has the same params
 params = [m1,m2,l1,l2]
 
 # The state variables for one double pendulum
@@ -203,14 +196,12 @@ state1 = [[t1_0,t2_0],[o1_0,o2_0],[a1_0,a2_0]]
 # The initial state difference between "adjacent" systems
 delta_state = [[dt1,dt2],[do1,do2],[da1,da2]]
 
-# The number of different systems we want to generate
-total = 10
-
 # Generate the initial state for each double pendulum system
 states_0 = get_initial_states(params,state1,delta_state,total)
 
+total = 10 # number of double pendulum systems
 dt = 0.01 # [s]
-iters = 10000#10000 # times to update the systems
+iters = 10000 # times to update the systems
 
 # Generate the data
 data = get_data(states_0,dt,iters,params,rk4)
@@ -258,10 +249,9 @@ def init():
 
 	ax.set_ylim(-2*l*1.1,2*l*1.1)
 	ax.set_xlim(-2*l*1.1,2*l*1.1)
-
+	# Concatenate the lists, then return as a tuple
 	return tuple(trail1_lines + trail2_lines + pen_lines)
 	
-# indexing error is here
 def update(i):
 	""" Uses values established previously as globals."""
 	j = i + 1;
@@ -274,9 +264,10 @@ def update(i):
 		# The line describing the kth double pendulum
 		pen_lines[k].set_data([0,x1pts[k][i],x2pts[k][i]],
 							  [0,y1pts[k][i],y2pts[k][i]])
-
+	# Concatenate the lists, then return as a tuple
 	return tuple(trail1_lines + trail2_lines + pen_lines)
 
+# Run the animation
 anim = animation.FuncAnimation(fig, update, frames=range(0,iters+1), 
 	init_func=init, blit=True, interval=1000*dt, repeat=False)
 plt.show()
