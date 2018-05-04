@@ -190,6 +190,10 @@ do2 = 0
 da1 = 0 # a1_0 has to be calculated for each system in get_initial_states()
 da2 = 0 # same. just leave as 0 for now
 
+total = 10 # number of double pendulum systems
+dt = 0.01 # [s]
+iters = 10000 # times to update the systems
+
 # Initial variables of one double_pendulum, grouped by derivative order. 
 state1 = [[t1_0,t2_0],[o1_0,o2_0],[a1_0,a2_0]]
 
@@ -198,10 +202,6 @@ delta_state = [[dt1,dt2],[do1,do2],[da1,da2]]
 
 # Generate the initial state for each double pendulum system
 states_0 = get_initial_states(params,state1,delta_state,total)
-
-total = 10 # number of double pendulum systems
-dt = 0.01 # [s]
-iters = 10000 # times to update the systems
 
 # Generate the data
 data = get_data(states_0,dt,iters,params,rk4)
