@@ -7,7 +7,6 @@ Notes: This solver is for systems whose motion is singly-parameterizeable, i.e.
 one variable is sufficient for describing the system's generalized position. 
 To use this solver for systems which are not singly-parameterizeable, this
 method can be called for updating each generalized coordinate separately. 
-
 """
 
 ## LIBRARIES
