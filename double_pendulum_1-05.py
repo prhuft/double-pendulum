@@ -152,7 +152,6 @@ def get_initial_states(params,state_template,dstate,sys_size):
 		# overwrite [a1,a2] which depend on the initial angle
 		state[2] = [alpha_init(state[0][0],l1),alpha_init(state[0][1],l2)]
 		states_0.append(state)
-	if DEBUG: [print(x) for x in states_0]
 	return states_0
 	
 def alpha_init(theta,length):
