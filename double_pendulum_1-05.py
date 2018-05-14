@@ -1,4 +1,4 @@
-""""
+"""
 Double Compound Pendulum Simulation, v1.05
 	
 Preston Huft, Spring 2018. 
@@ -6,9 +6,10 @@ Preston Huft, Spring 2018.
 Numerical simulation of compound double pendulum, solved iteratively with
 the Runge-Kutta (4th order) method. 
 
-Version notes: First version to attempt multiple- double pendula plotting, i.e.
+Version notes: First version to do multiple- double pendula plotting, i.e.
 a simulation showing the time evolution of several overlayed double pendula with
-differing initial conditions.
+differing initial conditions. Can now write frames to a gif if ImageMagick is
+installed.
 
 To-Do List: 
 - Become bored enough to turn this into a double "springdulum" simulation. 
@@ -29,10 +30,13 @@ import math as m
 from math import cos
 from math import sin
 
-## GLOBAL CONSTANTS
+## GLOBAL "CONSTANTS"
 
 g = 9.8 # [m/s]
 DEBUG = 0 # set to 1 if we're debugging
+writer_dir = "C:\Program Files\ImageMagick-7.0.7-Q16\magick.exe"
+gif_writer = "imagemagick"
+filename = 'py_dblpend_comparator_wtrails_20fps.gif'
 
 ## METHODS
 
@@ -191,7 +195,7 @@ da2 = 0 # same. just leave as 0 for now
 
 total = 10 # number of double pendulum systems
 dt = 0.01 # [s]
-iters = 10000 # times to update the systems
+iters = 200#10000 # times to update the systems
 
 # Initial variables of one double_pendulum, grouped by derivative order. 
 state1 = [[t1_0,t2_0],[o1_0,o2_0],[a1_0,a2_0]]
@@ -207,7 +211,7 @@ data = get_data(states_0,dt,iters,params,rk4)
 
 ## SIMULATION SETUP
 
-# Initialize the figure
+# Extract the data
 xpts,ypts = [],[]
 for armdata in data: # iterates twice
 	for data_n in armdata: # iterate through the data for all n systems
@@ -220,11 +224,15 @@ y1pts,y2pts = ypts[:n],ypts[n:]
 
 if DEBUG: print("pt. lengths: ",len(x1pts),len(x2pts),len(y1pts),len(y2pts))
 
+# Initialize the figure
 fig = plt.figure()
 ax = fig.add_subplot(111)
-ax.set_facecolor('black')
+ax.set_axis_off() # gif background shows up white when we do this. We're only
+				  # drawing the point now... But the figure is as expected.
 ax.set_aspect(aspect='equal')
+ax.set_facecolor('black')
 fig.patch.set_facecolor('black')
+fig.add_axes(ax)
 
 # Initialize the lines to be plotted 
 pen_lines = []
@@ -235,7 +243,7 @@ for k in range(0,total):
 	trail2_line, = ax.plot([],[],lw=1)
 	trail1_lines.append(cp(trail1_line))
 	trail2_lines.append(cp(trail2_line))
-	pen_line, = ax.plot([],[],color='white',lw=3)
+	pen_line, = ax.plot([],[],color='blue',lw=3)
 	pen_lines.append(cp(pen_line))
 
 def init():
@@ -267,7 +275,12 @@ def update(i):
 	return tuple(trail1_lines + trail2_lines + pen_lines)
 
 # Run the animation
-anim = animation.FuncAnimation(fig, update, frames=range(0,iters+1), 
-	init_func=init, blit=True, interval=1000*dt, repeat=False)
+anim = animation.FuncAnimation(fig, update, frames=range(0,iters), 
+	init_func=init, blit=True, interval=1000*dt, repeat=True)
+	
+# Save the animation as a gif. Note this only draws the points we plot, not the
+# background, so the gif background is white. Weird.
+plt.rcParams["animation.convert_path"] = writer_dir
+anim.save(filename, writer=gif_writer,extra_args="convert",fps=20)
 plt.show()
 
