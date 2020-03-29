@@ -8,7 +8,7 @@ the Runge-Kutta (4th order) method.
 
 Version notes: Initial angular velocity conditions for each system deviate from
 the template state by a set amount, as compared to varying the initial angles as
-done in version 1.05.
+done in version 1.05 (multi).
 
 To-Do List: 
 - Become bored enough to turn this into a double "springdulum" simulation. 

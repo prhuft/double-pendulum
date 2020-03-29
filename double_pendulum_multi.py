@@ -6,7 +6,7 @@ Preston Huft, Spring 2018.
 Numerical simulation of compound double pendulum, solved iteratively with
 the Runge-Kutta (4th order) method. 
 
-Version notes: First version to do multiple- double pendula plotting, i.e.
+Version notes: First version to do multiple-double pendula plotting, i.e.
 a simulation showing the time evolution of several overlayed double pendula with
 differing initial conditions. Can now write frames to a gif if ImageMagick is
 installed.
@@ -178,8 +178,9 @@ l2 = 1 # [m]
 params = [m1,m2,l1,l2]
 
 # The state variables for one double pendulum
-t1_0 = m.pi/2 # [rad] from vertical
-t2_0 = m.pi/2 # ditto
+t1_0 = m.pi #m.pi/2 # [rad] from vertical
+t2_0 = m.pi #m.pi/2
+m.pi/2 # ditto
 o1_0 = 0 # [rad/s] 
 o2_0 = 0 # ditto
 a1_0 = alpha_init(t1_0,l1) # [rad/s^2]
@@ -195,7 +196,7 @@ da2 = 0 # same. just leave as 0 for now
 
 total = 10 # number of double pendulum systems
 dt = 0.01 # [s]
-iters = 200#10000 # times to update the systems
+iters = 1000 # times to update the systems
 
 # Initial variables of one double_pendulum, grouped by derivative order. 
 state1 = [[t1_0,t2_0],[o1_0,o2_0],[a1_0,a2_0]]
@@ -276,11 +277,16 @@ def update(i):
 
 # Run the animation
 anim = animation.FuncAnimation(fig, update, frames=range(0,iters), 
-	init_func=init, blit=True, interval=1000*dt, repeat=True)
+	init_func=init, blit=True, interval=1000*dt, repeat=False)
 	
 # Save the animation as a gif. Note this only draws the points we plot, not the
 # background, so the gif background is white. Weird.
-plt.rcParams["animation.convert_path"] = writer_dir
-anim.save(filename, writer=gif_writer,extra_args="convert",fps=20)
+# plt.rcParams["animation.convert_path"] = writer_dir
+# anim.save(filename, writer=gif_writer,extra_args="convert",fps=20)d
+print("writing html file...")
+vid_html = anim.to_html5_video()
+with open("double_pendula.html", "w") as v:
+	v.write(vid_html)
+print("done.")
 plt.show()
-
+plt.close(fig)
