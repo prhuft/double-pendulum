@@ -26,9 +26,7 @@ from matplotlib import pyplot as plt
 import matplotlib.animation as animation
 import numpy as np
 from copy import copy as cp
-import math as m
-from math import cos
-from math import sin
+import math as m, cos, sin
 
 ## GLOBAL "CONSTANTS"
 
